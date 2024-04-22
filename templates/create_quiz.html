@@ -1,0 +1,45 @@
+{% extends "base3.html" %}
+
+{% block content %}
+<h1>Создание викторины</h1>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.title.label }}<br>
+        {{ form.title(class="form-control") }}<br>
+        {% for error in form.title.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.content.label }}<br>
+        {{ form.content(class="form-control") }}<br>
+        {% for error in form.content.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>
+    <div class="form-group">
+            <label for="classSelect">Выберите статус викторины</label>
+            <select class="form-control" id="classSelect" name="is_private">
+                <option>Публичная</option>
+                <option>Приватная</option>
+            </select>
+        </div></p>
+    <p>
+        {{ form.time_limit.label }}<br>
+        {{ form.time_limit(class="form-control") }}<br>
+        {% for error in form.time_limit.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>{{ form.submit(type="submit", class="btn btn-primary", value='Создать') }}</p>
+    {{message}}
+</form>
+{% endblock %}
