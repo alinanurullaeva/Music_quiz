@@ -4,8 +4,11 @@ from flask import Flask, render_template, request, redirect
 
 from data.users import User
 from data.quizzes import Quiz
+from data.composers import Composer
+from data.compositions import Composition
 
 from forms.user import RegisterForm
+from forms.change import ChangeForm, ChangePasswordForm
 from forms.quiz import QuizForm
 
 from flask_login import LoginManager, login_user, current_user, login_required, logout_user
@@ -20,8 +23,8 @@ login_manager.init_app(app)
 
 @app.route("/")
 def index():
-    if current_user:
-        return redirect('/')
+    # if current_user:
+    #    return redirect('/main')
     return render_template('index.html', title='Music Quiz')
 
 
@@ -79,7 +82,35 @@ def change():
     user = current_user
     if not user:
         return redirect('/')
-    return render_template('change', title='Изменить данные', user=user)
+    form = ChangeForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        user.name = form.name.data
+        user.surname = form.surname.data
+        db_sess.commit()
+        return redirect('/lk')
+    return render_template('change.html', title='Изменить данные', form=form, user=user)
+
+
+@app.route('/lk/change_password', methods=['GET', 'POST'])
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        if user.check_password(form.old_password.data):
+            if form.new_password.data != form.password_again.data:
+                return render_template('change_password.html', title='Изменить пароль',
+                                       form=form,
+                                       message="Пароли не совпадают")
+            user.set_password(form.new_password.data)
+            db_sess.commit()
+            return redirect('/lk')
+        return render_template('change_password.html',
+                               message="Неправильный старый пароль",
+                               form=form)
+    return render_template('change_password.html', title='Изменить пароль', form=form)
 
 
 @login_manager.user_loader
@@ -102,7 +133,7 @@ def main():
     return render_template('main.html')
 
 
-@app.route('/create_quiz')
+@app.route('/create_quiz', methods=['GET', 'POST'])
 def create_quiz():
     if not current_user:
         return redirect('/')
@@ -125,6 +156,12 @@ def create_quiz():
         db_sess.commit()
         return redirect('/main')
     return render_template('create_quiz.html', title='Создание викторины', form=form)
+
+
+@app.route('/select_quiz', methods=['GET', 'POST'])
+def select_quiz():
+    db_sess = db_session.create_session()
+    compositions_list = db_sess.query(Composition)
 
 
 '''@app.route('/form_sample', methods=['POST', 'GET'])

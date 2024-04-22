@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Внести изменения</h1>
+<h1>Изменить данные</h1>
 <form action="" method="post">
     {{ form.hidden_tag() }}
     <p>
         {{ form.name.label }}<br>
-        <input type="text" name="name" value="FSF" placeholder="Введите имя"><br>
+        {{ form.name(class="form-control", value=user.name) }}<br>
         {% for error in form.name.errors %}
             <p class="alert alert-danger" role="alert">
                 {{ error }}
@@ -15,48 +15,13 @@
     </p>
     <p>
         {{ form.surname.label }}<br>
-        {{ form.surname(class="form-control") }}<br>
+        {{ form.surname(class="form-control", value=user.surname) }}<br>
         {% for error in form.surname.errors %}
             <p class="alert alert-danger" role="alert">
                 {{ error }}
             </p>
         {% endfor %}
     </p>
-    <p>
-        {{ form.email.label }}<br>
-        {{ form.email(class="form-control", type="email") }}<br>
-        {% for error in form.email.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{ error }}
-            </p>
-        {% endfor %}
-    </p>
-    <p>
-        {{ form.password.label }}<br>
-        {{ form.password(class="form-control", type="password") }}<br>
-        {% for error in form.password.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{ error }}
-            </p>
-        {% endfor %}
-    </p>
-    <p>
-        {{ form.password_again.label }}<br>
-        {{ form.password_again(class="form-control", type="password") }}<br>
-        {% for error in form.password_again.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{ error }}
-            </p>
-        {% endfor %}
-    </p>
-    <p>
-    <div class="form-group">
-            <label for="classSelect">Выберите статус</label>
-            <select class="form-control" id="classSelect" name="position">
-                <option>ученик</option>
-                <option>учитель</option>
-            </select>
-        </div></p>
     <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
     {{message}}
 </form>
