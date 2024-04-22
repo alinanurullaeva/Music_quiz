@@ -22,14 +22,7 @@
             </p>
         {% endfor %}
     </p>
-    <p>
-    <div class="form-group">
-            <label for="classSelect">Выберите статус викторины</label>
-            <select class="form-control" id="classSelect" name="is_private">
-                <option>Публичная</option>
-                <option>Приватная</option>
-            </select>
-        </div></p>
+    <p>{{ form.is_private() }} {{ form.is_private.label }}</p>
     <p>
         {{ form.time_limit.label }}<br>
         {{ form.time_limit(class="form-control") }}<br>

@@ -20,8 +20,8 @@ login_manager.init_app(app)
 
 @app.route("/")
 def index():
-    if current_user:
-        return redirect('/')
+    # if current_user:
+    #    return redirect('/main')
     return render_template('index.html', title='Music Quiz')
 
 
@@ -102,7 +102,7 @@ def main():
     return render_template('main.html')
 
 
-@app.route('/create_quiz')
+@app.route('/create_quiz', methods=['GET', 'POST'])
 def create_quiz():
     if not current_user:
         return redirect('/')
