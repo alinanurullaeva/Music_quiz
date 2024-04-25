@@ -1,0 +1,35 @@
+{% extends "base5.html" %}
+
+{% block content %}
+<h1>Выберите викторину и введите её номер</h1>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.find_composition.label }}<br>
+        {{ form.find_composition(class="form-control") }}<br>
+        {% for error in form.find_composition.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.find_composer.label }}<br>
+        {{ form.find_composer(class="form-control") }}<br>
+        {% for error in form.find_composer.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>{{ form.submit(type="submit", class="btn btn-primary", value='Поиск викторины') }}</p>
+    {{message}}
+</form>
+<p>Номер произведения, фамилия композитора, название произведения</p>
+<table>
+{% for i in arr %}
+  <p>{{ i }}</p>
+{% endfor %}
+</table>
+<p></p>
+{% endblock %}

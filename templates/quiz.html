@@ -1,10 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base5.html" %}
 
-</body>
-</html>
+{% block content %}
+    <h1>Сведения о викторине</h1>
+    <p>Название: {{ quiz.title }}</p>
+    <p>Имя создателя: {{ user.name }} {{ user.surname }}</p>
+    <p>Содержание: {{ quiz.content }}</p>
+    <a class="btn btn-primary" href='/quiz/list_compositions'>Список произведений</a>
+    <p>Временное ограничение (в минутах): {{ quiz.time_limit }}</p>
+    <p>Приватная: {{ private }}</p>
+    <p>Дата создания: {{ quiz.created_date }}</p>
+    {% if flag %}
+        <p><a class="btn btn-primary" href="/my_quizzes">Посмотреть результаты</a></p>
+    {% endif %}
+    <p><a class="btn btn-primary " href="/lk/change">Пройти тест</a></p>
+{% endblock %}

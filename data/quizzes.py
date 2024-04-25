@@ -9,7 +9,7 @@ class Quiz(SqlAlchemyBase):
     __tablename__ = 'quizzes'
 
     id = sqlalchemy.Column(sqlalchemy.Integer,
-                                primary_key=True, autoincrement=True)
+                           primary_key=True, autoincrement=True)
     title = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     content = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     created_date = sqlalchemy.Column(sqlalchemy.DateTime,
@@ -18,5 +18,5 @@ class Quiz(SqlAlchemyBase):
 
     user_id = sqlalchemy.Column(sqlalchemy.Integer,
                                 sqlalchemy.ForeignKey("users.id"))
-    time_limit = sqlalchemy.Column(sqlalchemy.Integer) # считаться и вводиться будет в минутах
+    time_limit = sqlalchemy.Column(sqlalchemy.Integer)  # считаться и вводиться будет в минутах
     user = orm.relationship('User')

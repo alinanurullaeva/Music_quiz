@@ -1,4 +1,3 @@
-import datetime
 import sqlalchemy
 from sqlalchemy import orm
 
@@ -9,8 +8,9 @@ class Composition(SqlAlchemyBase):
     __tablename__ = 'compositions'
 
     id = sqlalchemy.Column(sqlalchemy.Integer,
-                                primary_key=True, autoincrement=True)
+                           primary_key=True, autoincrement=True)
     title = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     composer_id = sqlalchemy.Column(sqlalchemy.Integer,
                                     sqlalchemy.ForeignKey("composers.id"))
     composer = orm.relationship('Composer')
+

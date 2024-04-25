@@ -1,4 +1,4 @@
-{% extends "base3.html" %}
+{% extends "base5.html" %}
 
 {% block content %}
 <h1>Создание викторины</h1>
@@ -22,6 +22,7 @@
             </p>
         {% endfor %}
     </p>
+    <a class="btn btn-primary" href="/create_quiz/compositions_list">Посмотреть список произведений</a>
     <p>{{ form.is_private() }} {{ form.is_private.label }}</p>
     <p>
         {{ form.time_limit.label }}<br>

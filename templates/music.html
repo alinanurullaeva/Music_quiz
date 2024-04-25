@@ -1,0 +1,11 @@
+{% extends "base5.html" %}
+
+{% block content %}
+<h1>Выберите викторину и введите её номер</h1>
+<ul>
+<audio class="songthumb" control="controls">
+  <source src="{{ url_for('static', filename=song) }}" type="audio/mp3"/>
+</audio>
+<a href="{{ url_for('static', filename=song) }}">Слушать</a>
+</ul>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base5.html" %}
+
+{% block content %}
+<h1>Выберите викторину и введите её номер</h1>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.find_quiz.label }}<br>
+        {{ form.find_quiz(class="form-control") }}<br>
+        {% for error in form.find_quiz.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>{{ form.submit(type="submit", class="btn btn-primary", value='Поиск викторины') }}</p>
+    {{message}}
+</form>
+<p>Номер викторины, название викторины, имя создателя</p>
+<table>
+{% for i in arr %}
+  <p>{{ i }}</p>
+{% endfor %}
+</table>
+<a class="btn btn-primary" href="/my_quizzes">Вернуться назад</a>
+<p></p>
+{% endblock %}
