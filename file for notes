@@ -1,0 +1,152 @@
+@singup.html
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+          integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+          crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{url_for('static', filename='css/style.css')}" />
+
+
+@app.route("/SingUp", methods=['POST', 'GET'])
+def sing_up():
+    if request.method == 'GET':
+        return render_template('singup.html')
+    elif request.method == 'POST':
+        print(request.form['name'])
+        print(request.form['surname'])
+        print(request.form['email'])
+        print(request.form['password'])
+        print(request.form['position'])
+        return "Форма отправлена"
+
+
+index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Music Quiz</title>
+
+</head>
+<body>
+<h2>Добро пожаловать на Music Quiz!</h2>
+<h3>Пожалуйста, авторизуйтесь или зарегистрируйтесь</h3>
+<a href="register">Зарегистрироваться</a>
+<a href="login">Войти</a>
+</body>
+</html>
+
+
+create_quiz
+{% extends "base3.html" %}
+
+
+
+select_quiz.html
+{% extends "base3.html" %}
+
+{% block content %}
+<h1>Выберите викторину и введите её номер</h1>
+<form1 action="" method="post">
+    {{ form1.hidden_tag() }}
+    <p>
+        {{ form1.number.label }}<br>
+        {{ form1.number(class="form-control") }}<br>
+        {% for error in form1.number.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>{{ form1.submit(type="submit", class="btn btn-primary", value='Выбрать викторину') }}</p>
+    {{message}}
+</form1>
+<div class="line"></div>
+<form2 action="" method="post">
+    {{ form2.hidden_tag() }}
+    <p>
+        {{ form2.find_composer.label }}<br>
+        {{ form2.find_composer(class="form-control") }}<br>
+        {% for error in form2.find_composer.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form2.find_composition.label }}<br>
+        {{ form2.find_composition(class="form-control") }}<br>
+        {% for error in form2.find_composition.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    <p>{{ form2.submit(type="submit", class="btn btn-primary", value='Поиск викторины') }}</p>
+    {{message}}
+</form2>
+{% endblock %}
+
+{% block content %}
+<h1>Создание викторины</h1>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.title.label }}<br>
+        {{ form.title(class="form-control") }}<br>
+        {% if not form.title.data %}
+            <p class="alert alert-danger" role="alert">
+                Введите значение
+            </p>
+        {% endif %}
+    </p>
+    <p>
+        {{ form.content.label }}<br>
+        {{ form.content(class="form-control") }}<br>
+        {% if not form.content.data %}
+            <p class="alert alert-danger" role="alert">
+                Введите значение
+            </p>
+        {% endif %}
+    </p>
+    <p>
+    <div class="form-group">
+            <label for="classSelect">Выберите статус викторины</label>
+            <select class="form-control" id="classSelect" name="is_private">
+                <option>Публичная</option>
+                <option>Приватная</option>
+            </select>
+        </div></p>
+    <p>
+        {{ form.time_limit.label }}<br>
+        {{ form.time_limit(class="form-control", type="password") }}<br>
+        {% if not form.time_limit.data %}
+            <p class="alert alert-danger" role="alert">
+                Введите значение
+            </p>
+        {% endif %}
+    </p>
+    <p>{{ form.submit(type="submit", class="btn btn-primary", value='Создать') }}</p>
+    {{message}}
+</form>
+{% endblock %}
+
+
+
+@app.route('/select_quiz/quiz_list')
+def quiz_list():
+    if not current_user:
+        return redirect('/')
+    form = FindForm()
+    db_sess = db_session.create_session()
+    compositions_list = db_sess.query(Composition)
+    arr = []
+    for i in compositions_list:
+        composer = db_sess.query(Composer).filter(Composer.id == i.composer_id).first()
+        arr.append(', '.join([composer.name, i.title]))
+    if form.validate_on_submit():
+        print(1)
+        return render_template('quiz_list.html', form=form)
+    return render_template('quiz_list.html', form=form)
+
+
+# quizzes_list = quizzes_list.filter(User.name.in_([form.find_user_surname.data]))
