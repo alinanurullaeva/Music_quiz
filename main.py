@@ -497,7 +497,6 @@ def test(quiz_id):
         db_sess.add(result)
         db_sess.commit()
         link = 'music/' + str(result.id) + '/' + quiz[0]
-        # return render_template('music.html')
         return redirect(link)
     return render_template('test.html', title='Тест', form=form)
 
