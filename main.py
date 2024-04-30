@@ -86,9 +86,9 @@ def change():
     if not current_user.is_authenticated:
         return redirect('/')
     form = ChangeForm()
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == current_user.id).first()
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.id == current_user.id).first()
         user.name = form.name.data
         user.surname = form.surname.data
         db_sess.commit()
