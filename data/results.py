@@ -20,6 +20,7 @@ class Result(SqlAlchemyBase):
                                     default=datetime.datetime.now)
     scores = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     total_score = sqlalchemy.Column(sqlalchemy.Integer)
+    is_finished = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     user = orm.relationship('User')
     quiz = orm.relationship('Quiz')

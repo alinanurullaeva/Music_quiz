@@ -150,3 +150,6 @@ def quiz_list():
 
 
 # quizzes_list = quizzes_list.filter(User.name.in_([form.find_user_surname.data]))
+
+
+previous_link = 'test/music/' + str(result.id) + '/' + quiz[previous_number]

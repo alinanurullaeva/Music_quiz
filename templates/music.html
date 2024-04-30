@@ -8,4 +8,33 @@
 </audio>
 <a href="{{ url_for('static', filename=song) }}">Слушать</a>
 </ul>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.composer.label }}<br>
+        {{ form.composer(class="form-control", value=composer_answer) }}<br>
+        {% for error in form.composer.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.composition.label }}<br>
+        {{ form.composition(class="form-control", value=composition_answer) }}<br>
+        {% for error in form.composition.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>{{ form.submit(type="submit", class="btn btn-primary", value='Сохранить') }}</p>
+    {{message}}
+</form>
+<a class="btn btn-primary" href= {{ previous }}>Предыдущий вопрос</a>
+<a class="btn btn-primary" href= {{ next }}>Следующий вопрос</a>
+<p></p>
+<a class="btn btn-primary" href={{ link }}>Завершить тест</a>
+<p></p>
+<p>{{message2 }}</p>
 {% endblock %}

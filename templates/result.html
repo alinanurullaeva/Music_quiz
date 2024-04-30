@@ -1,0 +1,14 @@
+{% extends "base5.html" %}
+
+{% block content %}
+<h1>Итоговый результат - {{ total_score }}</h1>
+<p>Имя ученика - {{ name }}</p>
+<p>Номер викторины - {{ quiz_id }}</p>
+<p>Ответ ученика - правильный ответ, количество баллов за задание</p>
+<table>
+{% for i in arr %}
+  <p>{{ i }}</p>
+{% endfor %}
+</table>
+<p></p>
+{% endblock %}

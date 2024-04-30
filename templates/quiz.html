@@ -10,7 +10,7 @@
     <p>Приватная: {{ private }}</p>
     <p>Дата создания: {{ quiz.created_date }}</p>
     {% if flag %}
-        <p><a class="btn btn-primary" href="/my_quizzes">Посмотреть результаты</a></p>
+        <p><a class="btn btn-primary" href={{ link2 }}>Посмотреть результаты</a></p>
     {% endif %}
-    <p><a class="btn btn-primary " href="/lk/change">Пройти тест</a></p>
+    <p><a class="btn btn-primary " href={{ link }}>Пройти тест</a></p>
 {% endblock %}

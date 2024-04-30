@@ -5,7 +5,10 @@
 <p></p>
 <p>
     <a class="btn btn-primary " href="/select_quiz">Выбрать викторину</a>
-    <a class="btn btn-success" href="/create_quiz">Создать викторину</a>
+    {% if flag %}
+        <a class="btn btn-primary" href="/create_quiz">Создать викторину</a>
+        <a class="btn btn-success" href="/my_quizzes">Мои викторины</a>
+    {% endif %}
 </p>
 <p></p>
 {% endblock %}

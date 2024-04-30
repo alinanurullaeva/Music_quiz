@@ -1,0 +1,26 @@
+{% extends "base5.html" %}
+
+{% block content %}
+<h1>Выберите викторину и введите её номер</h1>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.find_result.label }}<br>
+        {{ form.find_result(class="form-control") }}<br>
+        {% for error in form.find_result.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>{{ form.submit(type="submit", class="btn btn-primary", value='Выбрать результат') }}</p>
+    {{message}}
+</form>
+<p>Номер результата, имя ученика, результат</p>
+<table>
+{% for i in arr %}
+  <p>{{ i }}</p>
+{% endfor %}
+</table>
+<p></p>
+{% endblock %}

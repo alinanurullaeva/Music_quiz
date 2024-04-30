@@ -1,0 +1,10 @@
+{% extends "base5.html" %}
+
+{% block content %}
+<h1>Хотите завершить тест и подсчитать результаты?</h1>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <p>{{ form.submit(type="submit", class="btn btn-primary", value='Завершить') }}</p>
+    {{message}}
+</form>
+{% endblock %}

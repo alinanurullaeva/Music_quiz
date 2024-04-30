@@ -18,3 +18,9 @@ class FindForm(FlaskForm):
 class MyQuiz(FlaskForm):
     find_quiz = StringField('Поиск по названию викторины')
     submit = SubmitField('Поиск викторины')
+
+
+class ResultForm(FlaskForm):
+    find_result = StringField('Выберите номер результата')
+    submit = SubmitField('Поиск результата')
+

@@ -1,7 +1,7 @@
 import os
 import datetime
 from data import db_session
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, redirect
 
 from data.users import User
 from data.quizzes import Quiz
@@ -12,8 +12,8 @@ from data.results import Result
 from forms.user import RegisterForm
 from forms.change import ChangeForm, ChangePasswordForm
 from forms.quiz import QuizForm, FindCompositionForm
-from forms.select_quiz import SelectForm, FindForm, MyQuiz
-from forms.test import StartForm
+from forms.select_quiz import SelectForm, FindForm, MyQuiz, ResultForm
+from forms.test import StartForm, TestForm
 
 from flask_login import LoginManager, login_user, current_user, login_required, logout_user
 from data.login_form import LoginForm
@@ -25,9 +25,11 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
-
 @app.route("/")
 def index():
+    if current_user.is_authenticated:
+        if current_user.id:
+            return redirect('/main')
     return render_template('index.html', title='Music Quiz')
 
 
@@ -63,11 +65,8 @@ def login():
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
-        print(user)
         if user and user.check_password(form.password.data):
-            print(1)
             login_user(user, remember=form.remember_me.data)
-            print(2)
             return redirect('/main')
         return render_template('login.html',
                                message="Неправильная почта или пароль",
@@ -77,16 +76,14 @@ def login():
 
 @app.route('/lk')
 def lk():
-    user = current_user
-    if not user:
+    if not current_user.is_authenticated:
         return redirect('/')
-    return render_template('lk.html', title='Личный кабинет', user=user)
+    return render_template('lk.html', title='Личный кабинет', user=current_user)
 
 
 @app.route('/lk/change', methods=['GET', 'POST'])
 def change():
-    user = current_user
-    if not user:
+    if not current_user.is_authenticated:
         return redirect('/')
     form = ChangeForm()
     if form.validate_on_submit():
@@ -101,6 +98,8 @@ def change():
 
 @app.route('/lk/change_password', methods=['GET', 'POST'])
 def change_password():
+    if not current_user.is_authenticated:
+        return redirect('/')
     form = ChangePasswordForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -113,7 +112,7 @@ def change_password():
             user.set_password(form.new_password.data)
             db_sess.commit()
             return redirect('/lk')
-        return render_template('change_password.html',
+        return render_template('change_password.html', title='Изменить пароль',
                                message="Неправильный старый пароль",
                                form=form)
     return render_template('change_password.html', title='Изменить пароль', form=form)
@@ -134,15 +133,18 @@ def logout():
 
 @app.route('/main')
 def main():
-    if not current_user:
-        return redirect("/")
-    return render_template('main.html', title='Главная страница')
+    if not current_user.is_authenticated:
+        return redirect('/')
+    flag = (current_user.position == 'учитель')
+    return render_template('main.html', title='Главная страница', flag=flag)
 
 
 @app.route('/create_quiz', methods=['GET', 'POST'])
 def create_quiz():
-    if not current_user:
+    if not current_user.is_authenticated:
         return redirect('/')
+    if current_user.position == 'ученик':
+        return redirect('/main')
     form = QuizForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -166,7 +168,7 @@ def create_quiz():
 
 @app.route('/create_quiz/compositions_list', methods=['GET', 'POST'])
 def compositions_list():
-    if not current_user:
+    if not current_user.is_authenticated:
         return redirect('/')
     form = FindCompositionForm()
     db_sess = db_session.create_session()
@@ -199,7 +201,7 @@ def compositions_list():
 
 @app.route('/select_quiz', methods=['GET', 'POST'])
 def select_quiz():
-    if not current_user:
+    if not current_user.is_authenticated:
         return redirect('/')
     form = SelectForm()
     db_sess = db_session.create_session()
@@ -209,14 +211,14 @@ def select_quiz():
         composer = db_sess.query(Composer).filter(Composer.id == i.composer_id).first()
         arr.append(', '.join([composer.name, i.title]))
     if form.validate_on_submit():
-        print(1)
-        return render_template('select_quiz.html', form=form)
-    return render_template('select_quiz.html', form=form)
+        link = '/quiz/' + str(form.number.data)
+        return redirect(link)
+    return render_template('select_quiz.html', title='Выбрать викторину', form=form)
 
 
 @app.route('/select_quiz/quiz_list', methods=['GET', 'POST'])
 def quiz_list():
-    if not current_user:
+    if not current_user.is_authenticated:
         return redirect('/')
     form = FindForm()
     db_sess = db_session.create_session()
@@ -245,7 +247,7 @@ def quiz_list():
         for i in quizzes_list:
             user = db_sess.query(User).filter(User.id == i.user_id).first()
             arr.append(', '.join([str(i.id), i.title, user.name + ' ' + user.surname]))
-        return render_template('quiz_list.html', form=form, arr=arr)
+        return render_template('quiz_list.html', title='Список викторин', form=form, arr=arr)
     quizzes_list = db_sess.query(Quiz).filter(Quiz.is_private == 0)
     arr = []
     for i in quizzes_list:
@@ -256,8 +258,10 @@ def quiz_list():
 
 @app.route('/my_quizzes', methods=['GET', 'POST'])
 def my_quizzes():
-    if not current_user:
+    if not current_user.is_authenticated:
         return redirect('/')
+    if current_user.position == 'ученик':
+        return redirect('/main')
     form = SelectForm()
     db_sess = db_session.create_session()
     compositions2_list = db_sess.query(Composition)
@@ -266,14 +270,14 @@ def my_quizzes():
         composer = db_sess.query(Composer).filter(Composer.id == i.composer_id).first()
         arr.append(', '.join([composer.name, i.title]))
     if form.validate_on_submit():
-        print(1)
-        return render_template('my_quizzes.html', title='Мои викторины', form=form)
+        link = '/quiz/' + str(form.number.data)
+        return redirect(link)
     return render_template('my_quizzes.html', title='Мои викторины', form=form)
 
 
 @app.route('/my_quizzes/my_quiz_list', methods=['GET', 'POST'])
 def my_quiz_list():
-    if not current_user:
+    if not current_user.is_authenticated:
         return redirect('/')
     form = MyQuiz()
     db_sess = db_session.create_session()
@@ -296,7 +300,7 @@ def my_quiz_list():
 
 @app.route('/quiz/<quiz_id>')
 def quiz(quiz_id):
-    if not current_user:
+    if not current_user.is_authenticated:
         return redirect('/')
     db_sess = db_session.create_session()
     quiz1 = db_sess.query(Quiz).filter(Quiz.id == quiz_id).first()
@@ -309,12 +313,15 @@ def quiz(quiz_id):
         flag = True
     else:
         flag = False
-    return render_template('quiz.html', title='Викторина', user=user, quiz=quiz1, private=private, flag=flag)
+    link = '/test/' + str(quiz_id)
+    link2 = '/results/' + str(quiz_id)
+    return render_template('quiz.html', title='Викторина', user=user, quiz=quiz1, private=private, flag=flag,
+                           link=link, link2=link2)
 
 
 @app.route('/quiz/list_compositions', methods=['GET', 'POST'])
 def list_compositions():
-    if not current_user:
+    if not current_user.is_authenticated:
         return redirect('/')
     form = FindCompositionForm()
     db_sess = db_session.create_session()
@@ -336,7 +343,7 @@ def list_compositions():
         for i in composition_list:
             composer = db_sess.query(Composer).filter(Composer.id == i.composer_id).first()
             arr.append(', '.join([str(i.id), composer.name, i.title]))
-        return render_template('compositions_list2.html', form=form, arr=arr)
+        return render_template('compositions_list2.html', title='Список произведений', form=form, arr=arr)
     composition_list = db_sess.query(Composition)
     arr = []
     for i in composition_list:
@@ -347,23 +354,135 @@ def list_compositions():
 
 @app.route('/test/music/<int:result_id>/<int:composition_id>', methods=["POST", "GET"])
 def music(result_id, composition_id):
+    if not current_user.is_authenticated:
+        return redirect('/')
+    form = TestForm()
+    db_sess = db_session.create_session()
+    result = db_sess.query(Result).filter(Result.id == result_id).first()
+    delta_time = datetime.timedelta(
+        minutes=db_sess.query(Quiz).filter(Quiz.id == result.quiz_id).first().time_limit)
+    time = result.taking_date + delta_time
+    quiz = db_sess.query(Quiz).filter(Quiz.id == result.quiz_id).first().content.split(';')
+    question_number = quiz.index(str(composition_id))
+    next_number = (question_number + 1) % len(quiz)
+    next_link = quiz[next_number]
+    previous_number = (question_number + len(quiz) - 1) % len(quiz)
+    previous_link = quiz[previous_number]
     song = 'music/' + str(composition_id) + '.mp3'
-    return render_template('music.html', song=song)
+    arr = result.student_answers.split(';')
+    link = '/finish/' + str(result.id)
+    if datetime.datetime.now() > time:
+        result.is_finished = True
+        db_sess.commit()
+        return render_template('music.html', song=song, next=next_link, previous=previous_link, form=form,
+                               composer_answer=arr[question_number].split(', ')[0],
+                               composition_answer=arr[question_number].split(', ')[1], link=link,
+                               message2='Время вышло. Ответы больше не принимаются. '
+                                        'Завершите тест, чтобы подсчитать результаты',
+                               title='Тест')
+    if form.validate_on_submit() and not result.is_finished:
+        arr[question_number] = ', '.join([form.composer.data, form.composition.data])
+        result.student_answers = ';'.join(arr)
+        db_sess.commit()
+        return render_template('music.html', song=song, next=next_link, previous=previous_link, form=form,
+                               composer_answer=arr[question_number].split(', ')[0],
+                               composition_answer=arr[question_number].split(', ')[1], link=link,
+                               message2=f'Тест завершиться в {time}', title='Тест')
+    return render_template('music.html', song=song, next=next_link, previous=previous_link, form=form,
+                           composer_answer=arr[question_number].split(', ')[0],
+                           composition_answer=arr[question_number].split(', ')[1], link=link,
+                           message2=f'Тест завершиться в {time}', title='Тест')
+
+
+@app.route('/finish/<int:result_id>', methods=["POST", "GET"])
+def finish(result_id):
+    if not current_user.is_authenticated:
+        return redirect('/')
+    form = StartForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        result = db_sess.query(Result).filter(Result.id == result_id).first()
+        student_answers = result.student_answers.split(';')
+        right_answers = result.right_answers.split(';')
+        scores = result.scores.split(';')
+        for i in range(len(student_answers)):
+            scores[i] = '0'
+            composer = student_answers[i].split(', ')[0]
+            composition = student_answers[i].split(', ')[1]
+            right_composer = right_answers[i].split(', ')[0]
+            right_composition = right_answers[i].split(', ')[1]
+            if composer.capitalize() == right_composer.capitalize():
+                scores[i] = str(int(scores[i]) + 1)
+            if composition.capitalize() == right_composition.capitalize():
+                scores[i] = str(int(scores[i]) + 1)
+        total_score = 0
+        for i in scores:
+            total_score += int(i)
+        result.scores = ';'.join(scores)
+        result.total_score = total_score
+        result.is_finished = True
+        db_sess.commit()
+        link = '/result/' + str(result_id)
+        return redirect(link)
+    return render_template('finish.html', title='Тест', form=form)
+
+
+@app.route('/result/<result_id>')
+def result(result_id):
+    if not current_user.is_authenticated:
+        return redirect('/')
+    db_sess = db_session.create_session()
+    final_result = db_sess.query(Result).filter(Result.id == result_id).first()
+    total_score = final_result.total_score
+    student_answers = final_result.student_answers.split(';')
+    right_answers = final_result.right_answers.split(';')
+    scores = final_result.scores.split(';')
+    quiz_id = final_result.quiz_id
+    user = db_sess.query(User).filter(User.id == final_result.user_id).first()
+    name = user.name + ' ' + user.surname
+    quiz = db_sess.query(Quiz).filter(Quiz.id == final_result.quiz_id).first()
+    arr = []
+    for i in range(len(student_answers)):
+        arr.append(f'{student_answers[i]} - {right_answers[i]}, {scores[i]}')
+    if current_user.id not in [user.id, quiz.user_id]:
+        return redirect('/main')
+    return render_template('result.html', arr=arr, total_score=total_score, title='Результат',
+                           quiz_id=quiz_id, name=name)
+
+
+@app.route('/results/<quiz_id>', methods=['GET', 'POST'])
+def results(quiz_id):
+    if not current_user.is_authenticated:
+        return redirect('/')
+    if current_user.position == 'ученик':
+        return redirect('/main')
+    form = ResultForm()
+    db_sess = db_session.create_session()
+    quiz2 = db_sess.query(Quiz).filter(Quiz.id == quiz_id).first()
+    if current_user.id != quiz2.user_id:
+        return redirect('/main')
+    results2 = db_sess.query(Result).filter(Result.quiz_id == quiz_id)
+    arr = []
+    for i in results2:
+        user = db_sess.query(User).filter(User.id == i.user_id).first()
+        arr.append(f'{i.id}, {user.name} {user.surname}, {i.total_score}')
+    if form.validate_on_submit():
+        link = '/result/' + str(form.find_result.data)
+        return redirect(link)
+    return render_template('results.html', title='Результаты', arr=arr, form=form)
 
 
 @app.route('/test/<quiz_id>', methods=['GET', 'POST'])
 def test(quiz_id):
-    if not current_user:
-        redirect('/')
+    if not current_user.is_authenticated:
+        return redirect('/')
     form = StartForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         quiz = db_sess.query(Quiz).filter(Quiz.id == quiz_id).first().content.split(';')
-        print(quiz)
         result = Result()
         result.user_id = current_user.id
         result.quiz_id = quiz_id
-        result.student_answers = ';'.join(['0' for i in range(len(quiz))])
         arr = []
         for i in quiz:
             composition = db_sess.query(Composition).filter(Composition.id == i).first()
@@ -371,13 +490,15 @@ def test(quiz_id):
             composer = db_sess.query(Composer).filter(Composer.id == composition.composer_id).first().name
             arr.append(composer + ', ' + title)
         result.right_answers = ';'.join(arr)
-        result.scores = result.student_answers = ';'.join(['0' for i in range(len(quiz))])
+        result.scores = ';'.join(['0' for i in range(len(quiz))])
+        result.student_answers = ';'.join(['без ответа, без ответа' for i in range(len(quiz))])
         result.total_score = 0
         result.taking_date = datetime.datetime.now()
         db_sess.add(result)
         db_sess.commit()
-        link = '/test/music/' + str(result.id) + '/1'
-        return render_template(link)
+        link = 'music/' + str(result.id) + '/' + quiz[0]
+        # return render_template('music.html')
+        return redirect(link)
     return render_template('test.html', title='Тест', form=form)
 
 
